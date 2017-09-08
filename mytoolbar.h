@@ -1,5 +1,6 @@
 #ifndef MYTOOLBAR_H
 #define MYTOOLBAR_H
+
 #include <QToolBar>
 #include <QGridLayout>
 #include <QLabel>
@@ -12,34 +13,40 @@
 #include <QMouseEvent>
 #include <QSignalMapper>
 
-class View;
+class Scene;
 
+// Class for toolbar of wboard
 class MyToolBar : public QToolBar
 {
     Q_OBJECT
 
 public:
-    MyToolBar(View* view, QWidget* parent = 0);
-    ~MyToolBar() {
-        delete colorWidgets;
-    }
+    MyToolBar(Scene*, QWidget *parent = nullptr);
+    ~MyToolBar() {}
 private:
-    View *viewport;
-    QWidget* toolBar;
-    QWidget* firstRow;
-    QWidget* secondRow;
+    Scene *scene;
 
+    // Widgets-wrappers
+    QWidget *toolBar;
+    QWidget *firstRow;
+    QWidget *secondRow;
+
+    // Widgets of first row
+    QLabel* firstLabelOfFirstRow;
+    QLabel* secondLabelOfFirstRow;
     QWidget* palet;
     QSlider* slider;
     QSpinBox* spinBox;
-
     QWidget* currentColor;
-    QVector<QPushButton> *colorWidgets;
 
+    // Widgets of second row
+    QLabel *firstLabelOfSecondRow;
     QComboBox* comboBox;
     QPushButton* pushButton1;
     QPushButton* pushButton2;
     QPushButton* pushButton3;
+
+    // Colors for small square color buttons
     const QVector<QColor> colors = { QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255),
                                      QColor(255, 255, 0), QColor(0, 255, 255), QColor(255, 0, 255),
                                      QColor(0, 0, 0), QColor(76, 55, 9), QColor(128, 128, 128),
@@ -51,8 +58,9 @@ private:
     void createFirstRow();
     void createPalette();
     void createSecondRow();
+private slots:
 
-public slots:
+    // Slot for changing color of big square on click on small color buttons
     void colorButtonClicked(const QString&);
 };
 

@@ -1,28 +1,21 @@
 #include "wboard.h"
 #include "MyToolBar.h"
 #include "view.h"
-#include <QGraphicsView>
-
+#include "scene.h"
+#include "aspectratiowidget.h"
 
 wboard::wboard(QWidget *parent) :
     QMainWindow(parent),
-    viewport(new View(300, 400)),
-    mtb(new MyToolBar(viewport))
-{
-    addToolBar(Qt::TopToolBarArea, mtb);
+    scene(new Scene(800, 400, this)),
+    viewport(new View(this)),
+    toolBar(new MyToolBar(scene, this))
 
-    QVBoxLayout* vbl = new QVBoxLayout;
-    vbl->addWidget(mtb);
-    vbl->addWidget(viewport);
+{   
+    addToolBar(Qt::TopToolBarArea, toolBar);
 
-    QWidget *window = new QWidget;
-    window->setLayout(vbl);
+    // Create additional widget-wrapper for fixing viewport with its ratio size
+    AspectRatioWidget *w = new AspectRatioWidget(viewport, 2, 1, this);
+    setCentralWidget(w);
 
-    setCentralWidget(window);
-
-
-}
-wboard::~wboard()
-{
-
+    viewport->setScene(scene);
 }

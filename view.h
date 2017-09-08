@@ -1,30 +1,38 @@
 #ifndef VIEW_H
 #define VIEW_H
 #include <QGraphicsView>
+#include <QPointF>
+#include <QSizeF>
+#include <QMouseEvent>
+#include <QGraphicsScene>
+#include <QDebug>
+#include <QGraphicsView>
+
+class Scene;
 
 class ShapeItem;
 
+// Class for graphicsview of wboard
 class View : public QGraphicsView
 {
     Q_OBJECT
-
 public:
-    View(int h, int w, QWidget *parent = 0);
+    View(QWidget *parent = nullptr);
+    void setScene(Scene *scene);
 
-public slots:
-    void resizeEvent(QResizeEvent *event);
-    void undo();
-    void changeState(QString);
 protected slots:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
-protected:
-    QGraphicsScene m_scene;
-    QVector<ShapeItem*> m_line;
-    bool m_isKeyPressed;
+    void resizeEvent(QResizeEvent *event);
+
+signals:   
+    void pressSignal(QPointF*);
+    void moveSignal(QPointF*);
+    void releaseSignal();
+
 private:
-    QString state = "Curve";
+    bool m_isKeyPressed;
 };
 
 #endif // VIEW_H

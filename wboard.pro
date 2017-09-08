@@ -28,10 +28,14 @@ SOURCES += \
         wboard.cpp \
         mytoolbar.cpp \
     view.cpp \
-    shapeitem.cpp
+    shapeitem.cpp \
+    scene.cpp \
+    aspectratiowidget.cpp
 
 HEADERS += \
         wboard.h \
     mytoolbar.h \
     view.h \
-    shapeitem.h
+    shapeitem.h \
+    scene.h \
+    aspectratiowidget.h
