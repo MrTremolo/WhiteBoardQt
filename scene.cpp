@@ -87,11 +87,6 @@ void Scene::clearAll()
 {
     // On click clearAll button
     clear();
-
-    for (auto i = sceneItems.begin(); i != sceneItems.end(); i++)
-        delete *i;
-    for (auto j = trashItems.end(); j != trashItems.end(); j++)
-        delete *j;
     sceneItems.clear();
     trashItems.clear();
 
