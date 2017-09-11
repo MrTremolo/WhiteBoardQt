@@ -18,6 +18,7 @@ class View : public QGraphicsView
     Q_OBJECT
 public:
     View(QWidget *parent = nullptr);
+    ~View() {}
     void setScene(Scene *scene);
 
 protected slots:

@@ -8,6 +8,7 @@
 #include <QBrush>
 #include <QPainterPath>
 #include <QPainter>
+#include <QDebug>
 
 // Class for items of scene in wboard, that can create
 // lines, curves, rectangles and ellipses
@@ -17,7 +18,7 @@ public:
 	enum shape { curve, line, rectangle, ellipse };
 
     ShapeItem(QPointF, const QColor&, const int, shape, QGraphicsItem *parent = nullptr);
-	virtual ~ShapeItem() {}
+    virtual ~ShapeItem() {}
 
 	QRectF boundingRect() const;
 
