@@ -1,4 +1,4 @@
-#include "scene.h"
+#include "scene.h"	
 #include "shapeitem.h"
 
 
@@ -10,11 +10,18 @@ Scene::Scene(int h, int w, QObject *parent) : QGraphicsScene(0, 0, h, w, parent)
 void Scene::pressEvent(QPointF *pos)
 {
     // Current Item that painted and will modified
-    currentItem = new ShapeItem(QColor(color), penWidth, this);
-    currentItem->setFirstPoint(pos);
+	
+	if (state == "Curve")
+		currentItem = new ShapeItem(*pos, QColor(color), penWidth, ShapeItem::curve);
+	if (state == "Line")
+		currentItem = new ShapeItem(*pos, QColor(color), penWidth, ShapeItem::line);
+	else if (state == "Rectangle")
+		currentItem = new ShapeItem(*pos, QColor(color), penWidth, ShapeItem::rectangle);
+	else if (state == "Ellipse")
+		currentItem = new ShapeItem(*pos, QColor(color), penWidth, ShapeItem::ellipse);
     sceneItems.push_back(currentItem);
     addItem(currentItem);
-
+	
     // Clear trashItems list
     if (trashItems.size())
     {
@@ -29,27 +36,7 @@ void Scene::pressEvent(QPointF *pos)
 
 void Scene::moveEvent(QPointF *pos)
 {
-    if (state == "Curve")
-    { 
-        currentItem->addCurve(pos);
-    }
-    else if (state == "Line")
-    {
-        currentItem->addLine(pos);
-    }
-    else if (state == "Rectangle")
-    {
-        currentItem->addRect(pos);
-    }
-    else if (state == "Ellipse")
-    {
-        currentItem->addEllipse(pos);
-    }
-}
-
-void Scene::releaseEvent()
-{
-    currentItem->removePoint();
+	currentItem->setXYChange(pos);
 }
 
 void Scene::undo()
@@ -86,8 +73,14 @@ void Scene::redo()
 void Scene::clearAll()
 {
     // On click clearAll button
+	// delete shown elements
     clear();
+
     sceneItems.clear();
+
+	// delete elements in trash
+	for (auto i = trashItems.begin(); i != trashItems.end(); i++)
+		delete *i;
     trashItems.clear();
 
     emit turnUndo(false);
@@ -107,4 +100,14 @@ void Scene::changeColor(const QString & str)
 void Scene::changeWidth(int width)
 {
     penWidth = width;
+}
+
+Scene::~Scene()
+{
+	// delete shown elements
+	clear();
+
+	// delete elements in trash
+	for (auto i = trashItems.begin(); i != trashItems.end(); i++)
+		delete *i;
 }

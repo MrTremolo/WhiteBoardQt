@@ -6,33 +6,31 @@
 #include <QGraphicsItemGroup>
 #include <QPen>
 #include <QBrush>
+#include <QPainterPath>
+#include <QPainter>
 
 // Class for items of scene in wboard, that can create
 // lines, curves, rectangles and ellipses
-class ShapeItem : public QObject, public QGraphicsItemGroup
+class ShapeItem : public QGraphicsItem
 {
-
 public:
-    ShapeItem(const QColor&, const int, QObject *parent = nullptr);
-    ~ShapeItem() {}
+	enum shape { curve, line, rectangle, ellipse };
 
-    void setFirstPoint(QPointF *point);
+    ShapeItem(QPointF, const QColor&, const int, shape, QGraphicsItem *parent = nullptr);
+	virtual ~ShapeItem() {}
 
-    void addCurve(QPointF *point);
-    void addLine(QPointF *point);
-    void addRect(QPointF *point);
-    void addEllipse(QPointF *point);
+	QRectF boundingRect() const;
 
-    void removePoint();
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR);
 
-protected:
-    QPointF *m_lastPoint = nullptr;
-    QGraphicsItem *currentItem = nullptr;
+	void setXYChange(QPointF*);
+	
 private:
-    QPointF *calculateCoordinatesForCorrectRect(QPointF*, QPointF*);
     int penWidth;
-    QPen m_pen;
-    QBrush m_brush;
+    QPen pen;
+	shape figure;
+	QPointF firstPoint;
+	QPointF changePoint;
 };
 
 #endif // SHAPEITEM_H

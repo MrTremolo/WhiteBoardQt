@@ -15,7 +15,6 @@ void View::setScene(Scene *scene)
     // View will notify scene for mouse events
     connect(this, SIGNAL(pressSignal(QPointF*)), scene, SLOT(pressEvent(QPointF*)));
     connect(this, SIGNAL(moveSignal(QPointF*)), scene, SLOT(moveEvent(QPointF*)));
-    connect(this, SIGNAL(releaseSignal()), scene, SLOT(releaseEvent()));
 
     QGraphicsView::setScene(scene);
 }
@@ -53,18 +52,18 @@ void View::mouseMoveEvent(QMouseEvent *event)
         QPointF pos = mapToScene(event->pos());
         emit moveSignal(&pos);
     }
+	QGraphicsView::mouseMoveEvent(event);
 }
 
 void View::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        // View will notify scene of stop drawing
-        QPointF pos = mapToScene(event->pos());
-        emit releaseSignal();
+        // Click button is not press anymore
         m_isKeyPressed = false;
 
     }
+	QGraphicsView::mouseReleaseEvent(event);
 }
 
 

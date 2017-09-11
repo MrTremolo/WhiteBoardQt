@@ -1,156 +1,66 @@
-#include "shapeitem.h"
+#include "shapeitem.h"	
+#include <QDebug>
 
-ShapeItem::ShapeItem(const QColor &color, const int width, QObject *parent)
-    : QObject(parent), QGraphicsItemGroup(),
-      m_pen(color), m_brush(color), penWidth(width)
+ShapeItem::ShapeItem(QPointF pos, const QColor &color, const int width, shape sh, QGraphicsItem *parent)
+    : QGraphicsItem(parent), firstPoint(pos), changePoint(pos),
+	figure(sh), pen(color), penWidth(width)
 {
-    m_pen.setWidth(width);
+    pen.setWidth(width);
 }
 
-void ShapeItem::setFirstPoint(QPointF *point)
+QRectF ShapeItem::boundingRect() const
 {
-    // Memorise coordinates of first click point
-    m_lastPoint = new QPointF(point->x(), point->y());
+	// Curve boundingRect() is determined as childs-lines boundingRects
+	if (figure == curve)
+		return QRectF();
+
+	// Line, rectangle, ellipse boundingRect() is firstly
+	// normalized by m_lastPoint and changePoint 
+	// to ensure that topLeft and bottomRight vertexes
+	// is determined right
+	else
+	{
+		QRectF rect(QPointF(firstPoint.x(), firstPoint.y()),
+			QPointF(changePoint.x(), changePoint.y()));
+		rect = rect.normalized();
+		return QRectF(QPointF(rect.topLeft().x()-penWidth, rect.topLeft().y()-penWidth), 
+					  QPointF(rect.bottomRight().x()+penWidth, rect.bottomRight().y() + penWidth));
+	}
 }
 
-void ShapeItem::addCurve(QPointF *point)
+void ShapeItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
-    // Curve is consists of lines
-    if (m_lastPoint)
-    {
-        QGraphicsLineItem *line = new QGraphicsLineItem(
-                    QLineF(*m_lastPoint, *point), this
-                    );
-        line->setPen(m_pen);
-        currentItem = line;
-
-        delete m_lastPoint;
-    }
-
-    // Every time set new last click point
-    m_lastPoint = new QPointF(point->x(), point->y());
+	// Line, rectangle, ellipse painting
+	painter->setPen(pen);
+	if (figure == line)
+		painter->drawLine(firstPoint, changePoint);
+	else if (figure == rectangle)
+		painter->drawRect(QRectF(firstPoint, changePoint).normalized());
+	else if (figure == ellipse)
+		painter->drawEllipse(QRectF(firstPoint, changePoint).normalized());
+	// Curve painting is determined by childs-lines paint()
 }
 
-
-
-void ShapeItem::addLine(QPointF *point)
+void ShapeItem::setXYChange(QPointF* pos)
 {
-    if (m_lastPoint)
-    {
-        if (currentItem)
-        {
-            removeFromGroup(currentItem);
-            delete currentItem;
-        }
+	// Line, rectangle, ellipse is painting with ShapeItem paint()
+	// firstPoint is first point
+	// changePoint is point from moveMouseEvent 
+	if (figure != curve)
+	{
+		changePoint = *pos;
+		prepareGeometryChange();
+	}
 
-        QGraphicsLineItem *line = new QGraphicsLineItem(
-                    QLineF(*m_lastPoint, *point), this
-                    );
-        line->setPen(m_pen);
-        currentItem = line;
-    }
-    else
-    {
-        m_lastPoint = new QPointF(point->x(), point->y());
-    }
+	// Curve is consists of many childs-lines
+	// changePoint is firstPoint of the new line
+	// *pos is the end of new line
+	else
+	{
+		QGraphicsLineItem *line = new QGraphicsLineItem(
+			QLineF(changePoint, *pos), this
+		);
+		line->setPen(pen);
+		changePoint = *pos;
+	}
 }
-
-void ShapeItem::addRect(QPointF *point)
-{
-    QPointF radius(penWidth, penWidth);
-    if (m_lastPoint)
-    {
-        if (currentItem)
-        {
-            removeFromGroup(currentItem);
-            delete currentItem;
-        }
-
-        // There is a case when we know 2 points of rectangle but it
-        // may not be the only lefttop vertex and rightbot vertex
-
-        // coordinatesForRect returns 2 QPointfS of lefttop vertex
-        // and rightbot vertex of the rectange (for correct calling constructor)
-        // of QRectF
-        QPointF *coordinatesForRect = calculateCoordinatesForCorrectRect(point, m_lastPoint);
-        QGraphicsRectItem *rect =  new QGraphicsRectItem(QRectF(coordinatesForRect[0],
-                                                               coordinatesForRect[1]),
-                                                         this);
-        delete[] coordinatesForRect;
-        rect->setPen(m_pen);
-        currentItem = rect;
-    }
-    else
-    {
-        m_lastPoint = new QPointF(point->x(), point->y());
-    }
-}
-
-void ShapeItem::addEllipse(QPointF *point)
-{
-    QPointF radius(penWidth, penWidth);
-    if (m_lastPoint)
-    {
-        if (currentItem)
-        {
-            removeFromGroup(currentItem);
-            delete currentItem;
-        }
-
-        // There is a case when we know 2 points of rectangle but it
-        // may not be the only lefttop vertex and rightbot vertex
-
-        // coordinatesForRect returns 2 QPointfS of lefttop vertex
-        // and rightbot vertex of the rectange (for correct calling constructor)
-        // of QRectF
-        QPointF *coordinatesForRect = calculateCoordinatesForCorrectRect(point, m_lastPoint);
-        QGraphicsEllipseItem *el = new QGraphicsEllipseItem(QRectF(coordinatesForRect[0],
-                                                                   coordinatesForRect[1]), this);
-        delete[] coordinatesForRect;
-        el->setPen(m_pen);
-        currentItem = el;
-    }
-    else
-    {
-        m_lastPoint = new QPointF(point->x(), point->y());
-    }
-}
-
-void ShapeItem::removePoint()
-{
-    // Delete coordinates of first click point
-    if (m_lastPoint)
-        delete m_lastPoint;
-    m_lastPoint = nullptr;
-}
-
-// Returns topleft and rightbot vertex of rect, that consists of pos1 and pos2 vertexes
-QPointF *ShapeItem::calculateCoordinatesForCorrectRect(QPointF *pos1, QPointF *pos2)
-{
-    QPointF *coordinates = new QPointF[2];
-
-    if (pos1->x() < pos2->x())
-    {
-        coordinates[0].setX(pos1->x());
-        coordinates[1].setX(pos2->x());
-    }
-    else
-    {
-        coordinates[0].setX(pos2->x());
-        coordinates[1].setX(pos1->x());
-    }
-    if (pos1->y() < pos2->y())
-    {
-        coordinates[0].setY(pos1->y());
-        coordinates[1].setY(pos2->y());
-    }
-    else
-    {
-        coordinates[0].setY(pos2->y());
-        coordinates[1].setY(pos1->y());
-    }
-
-    return coordinates;
-}
-
-

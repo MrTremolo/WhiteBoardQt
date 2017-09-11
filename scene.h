@@ -13,7 +13,7 @@ class Scene : public QGraphicsScene
 
 public:
     Scene(int h, int w, QObject *parent = nullptr);
-    ~Scene() {}
+	~Scene();
 
 signals:
     // Signals for notifing View to disable or enable buttons
@@ -24,7 +24,6 @@ public slots:
     // Slots from View of mouse events
     void pressEvent(QPointF*);
     void moveEvent(QPointF*);
-    void releaseEvent();
 
     // Slots from View of changing special tools
     void changeState(const QString&);
@@ -40,14 +39,16 @@ private:
     QString state = "Curve";
     QString color = "#000000";
     int penWidth = 1;
+
+	// Element that paint and modify with mouse Events 
     ShapeItem *currentItem;
 
     // Painted elements
-    QList<QGraphicsItem*> sceneItems;
+    QVector<QGraphicsItem*> sceneItems;
 
     // Deleted elements on click undo button
     // It has to be to ability to readd elements
-    QList<QGraphicsItem*> trashItems;
+    QVector<QGraphicsItem*> trashItems;
 
 };
 

@@ -29,7 +29,6 @@ protected slots:
 signals:   
     void pressSignal(QPointF*);
     void moveSignal(QPointF*);
-    void releaseSignal();
 
 private:
     bool m_isKeyPressed;
